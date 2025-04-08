@@ -1,8 +1,7 @@
-import tkinter as tk
-from tkinter import messagebox
+import streamlit as st
 
 def calculate_bmi(weight, height):
-    height_m = height / 100  # Convert cm to meters
+    height_m = height / 100
     bmi = weight / (height_m ** 2)
     return round(bmi, 2)
 
@@ -23,12 +22,12 @@ def recommend_diet(fitness_goal, bmr, diet_type):
     else:
         calories = bmr
         macros = {'Protein': 0.3, 'Carbs': 0.45, 'Fats': 0.25, 'Fiber': 30}
-    
+
     protein_grams = round((macros['Protein'] * calories) / 4, 2)
     carbs_grams = round((macros['Carbs'] * calories) / 4, 2)
     fats_grams = round((macros['Fats'] * calories) / 9, 2)
     fiber_grams = macros['Fiber']
-    
+
     meal_plans = {
         "Veg": {
             "Breakfast": "Oatmeal with nuts and fruits",
@@ -55,11 +54,11 @@ def recommend_diet(fitness_goal, bmr, diet_type):
             "Snacks": "Cheese and almonds"
         }
     }
-    
+
     diet_plan = f"Calories: {calories} kcal\nProtein: {protein_grams}g\nCarbs: {carbs_grams}g\nFats: {fats_grams}g\nFiber: {fiber_grams}g\n\n🍽 Meal Plan:\n"
     for meal, food in meal_plans[diet_type].items():
         diet_plan += f"{meal}: {food}\n"
-    
+
     return diet_plan
 
 def recommend_workout(fitness_goal):
@@ -70,63 +69,21 @@ def recommend_workout(fitness_goal):
     }
     return "\n".join(workout_plans.get(fitness_goal, []))
 
-def generate_recommendations():
-    age = int(age_entry.get())
-    gender = gender_var.get()
-    height = float(height_entry.get())
-    weight = float(weight_entry.get())
-    fitness_goal = goal_var.get()
-    diet_type = diet_var.get()
-    
+st.title("💪 Diet & Workout Recommender")
+
+age = st.number_input("Enter your Age", min_value=8, max_value=100, step=1)
+gender = st.radio("Select Gender", ["Male", "Female"])
+height = st.number_input("Height (in cm)")
+weight = st.number_input("Weight (in kg)")
+fitness_goal = st.selectbox("Fitness Goal", ["Weight Loss", "Muscle Gain", "Maintenance"])
+diet_type = st.selectbox("Diet Preference", ["Veg", "Non Veg", "Vegan", "Keto"])
+
+if st.button("Get Recommendations"):
     bmi = calculate_bmi(weight, height)
     bmr = calculate_bmr(weight, height, age, gender)
     diet_plan = recommend_diet(fitness_goal, bmr, diet_type)
     workout_plan = recommend_workout(fitness_goal)
-    
-    result_text = f"BMI: {bmi}\nBMR: {bmr} kcal/day\n\n🥗 Recommended Diet:\n{diet_plan}\n🏋️ Workout Plan:\n{workout_plan}"  
-    messagebox.showinfo("Results", result_text)
 
-root = tk.Tk()
-root.title("Diet & Workout Recommender")
-root.geometry("400x700")
-
-tk.Label(root, text="Enter your details", font=("Arial", 14)).pack()
-
-# Age
-age_label = tk.Label(root, text="Age:")
-age_label.pack()
-age_entry = tk.Entry(root)
-age_entry.pack()
-
-# Gender
-gender_var = tk.StringVar(value="Male")
-tk.Label(root, text="Gender:").pack()
-tk.Radiobutton(root, text="Male", variable=gender_var, value="Male").pack()
-tk.Radiobutton(root, text="Female", variable=gender_var, value="Female").pack()
-
-# Height
-height_label = tk.Label(root, text="Height (cm):")
-height_label.pack()
-height_entry = tk.Entry(root)
-height_entry.pack()
-
-# Weight
-weight_label = tk.Label(root, text="Weight (kg):")
-weight_label.pack()
-weight_entry = tk.Entry(root)
-weight_entry.pack()
-
-# Fitness Goal
-goal_var = tk.StringVar(value="Weight Loss")
-tk.Label(root, text="Fitness Goal:").pack()
-tk.OptionMenu(root, goal_var, "Weight Loss", "Muscle Gain", "Maintenance").pack()
-
-# Diet Type
-diet_var = tk.StringVar(value="Veg")
-tk.Label(root, text="Diet Preference:").pack()
-tk.OptionMenu(root, diet_var, "Veg", "Non Veg", "Vegan", "Keto").pack()
-
-# Submit Button
-tk.Button(root, text="Get Recommendation", command=generate_recommendations).pack()
-
-root.mainloop()
+    st.success(f"Your BMI: {bmi}\nYour BMR: {bmr} kcal/day")
+    st.markdown(f"### 🥗 Diet Plan\n{diet_plan}")
+    st.markdown(f"### 🏋️ Workout Plan\n{workout_plan}")
